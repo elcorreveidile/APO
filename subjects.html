@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subjects - SpanishFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/splide@4.1.4/dist/js/splide.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Dancing+Script:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --terracotta: #E07A5F;
+            --sage-green: #81B29A;
+            --golden-amber: #F2CC8F;
+            --warm-cream: #F4F3EE;
+            --charcoal: #3D405B;
+        }
+        
+        body {
+            background-color: var(--warm-cream);
+            font-family: 'Inter', sans-serif;
+            color: var(--charcoal);
+        }
+        
+        .subject-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .subject-card:active {
+            transform: scale(0.98);
+        }
+        
+        .subject-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--terracotta), var(--sage-green));
+        }
+        
+        .subject-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        
+        .daily-prompt-card {
+            background: linear-gradient(135deg, var(--terracotta), var(--sage-green));
+            color: white;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .daily-prompt-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+        
+        .nav-bottom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(224, 122, 95, 0.2);
+        }
+        
+        .search-bar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filter-chip {
+            background: white;
+            border: 2px solid #E5E7EB;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-chip.active {
+            background: var(--terracotta);
+            border-color: var(--terracotta);
+            color: white;
+        }
+        
+        .difficulty-indicator {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .difficulty-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #E5E7EB;
+        }
+        
+        .difficulty-dot.active {
+            background: var(--sage-green);
+        }
+        
+        .favorite-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .favorite-btn.active {
+            background: var(--terracotta);
+            color: white;
+        }
+    </style>
+</head>
+<body class="pb-20">
+    <!-- Header -->
+    <div class="bg-white shadow-sm">
+        <div class="px-4 py-6">
+            <h1 class="text-2xl font-bold text-gray-800" style="font-family: 'Playfair Display', serif;">Conversation Topics</h1>
+            <p class="text-sm text-gray-600 mt-1">Choose your Spanish practice subjects</p>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="px-4 py-4">
+        <div class="search-bar p-3 mb-4">
+            <div class="flex items-center space-x-3">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="text" placeholder="Search topics..." class="flex-1 outline-none text-sm" id="search-input">
+            </div>
+        </div>
+        
+        <div class="flex space-x-2 overflow-x-auto pb-2">
+            <button class="filter-chip active" data-filter="all">All Topics</button>
+            <button class="filter-chip" data-filter="beginner">A1-A2</button>
+            <button class="filter-chip" data-filter="intermediate">B1-B2</button>
+            <button class="filter-chip" data-filter="advanced">C1-C2</button>
+            <button class="filter-chip" data-filter="favorites">❤️ Favorites</button>
+        </div>
+    </div>
+
+    <!-- Daily Featured Topic -->
+    <div class="px-4 mb-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-3">Today's Featured</h2>
+        <div class="daily-prompt-card p-6 relative">
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                            <span class="text-2xl">🌮</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold">Food & Cuisine</h3>
+                            <p class="text-sm opacity-80">Explore Spanish culinary culture</p>
+                        </div>
+                    </div>
+                    <button class="px-4 py-2 bg-white/20 rounded-full text-sm font-medium" onclick="startDailyPractice()">
+                        Start Practice
+                    </button>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm opacity-80">
+                    <span>📚 25 conversations available</span>
+                    <span>⏱️ 5-10 min sessions</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Categories -->
+    <div class="px-4 mb-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-3">All Topics</h2>
+        
+        <div class="grid grid-cols-2 gap-4" id="subjects-grid">
+            <!-- Daily Life -->
+            <div class="subject-card p-4 relative" data-subject="daily-life" data-levels="A1,A2" onclick="selectSubject('daily-life')">
+                <button class="favorite-btn" onclick="toggleFavorite(event, 'daily-life')">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>
+                
+                <div class="subject-icon" style="background: linear-gradient(135deg, #FF6B6B, #FF8E8E);">
+                    🏠
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-1">Daily Life</h3>
+                <p class="text-xs text-gray-600 mb-2">Routines, family, home activities</p>
+                <div class="flex items-center justify-between">
+                    <div class="difficulty-indicator">
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">32 conv.</span>
+                </div>
+            </div>
+
+            <!-- Travel & Tourism -->
+            <div class="subject-card p-4 relative" data-subject="travel" data-levels="A2,B1,B2" onclick="selectSubject('travel')">
+                <button class="favorite-btn" onclick="toggleFavorite(event, 'travel')">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>
+                
+                <div class="subject-icon" style="background: linear-gradient(135deg, #4ECDC4, #44A08D);">
+                    ✈️
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-1">Travel & Tourism</h3>
+                <p class="text-xs text-gray-600 mb-2">Hotels, transportation, sightseeing</p>
+                <div class="flex items-center justify-between">
+                    <div class="difficulty-indicator">
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">28 conv.</span>
+                </div>
+            </div>
+
+            <!-- Business & Work -->
+            <div class="subject-card p-4 relative" data-subject="business" data-levels="B1,B2,C1" onclick="selectSubject('business')">
+                <button class="favorite-btn" onclick="toggleFavorite(event, 'business')">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>
+                
+                <div class="subject-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                    💼
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-1">Business & Work</h3>
+                <p class="text-xs text-gray-600 mb-2">Meetings, presentations, networking</p>
+                <div class="flex items-center justify-between">
+                    <div class="difficulty-indicator">
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">35 conv.</span>
+                </div>
+            </div>
+
+            <!-- Culture & Arts -->
+            <div class="subject-card p-4 relative" data-subject="culture" data-levels="B2,C1,C2" onclick="selectSubject('culture')">
+                <button class="favorite-btn" onclick="toggleFavorite(event, 'culture')">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>
+                
+                <div class="subject-icon" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                    🎭
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-1">Culture & Arts</h3>
+                <p class="text-xs text-gray-600 mb-2">Literature, music, traditions</p>
+                <div class="flex items-center justify-between">
+                    <div class="difficulty-indicator">
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">22 conv.</span>
+                </div>
+            </div>
+
+            <!-- Health & Wellness -->
+            <div class="subject-card p-4 relative" data-subject="health" data-levels="A2,B1,B2" onclick="selectSubject('health')">
+                <button class="favorite-btn" onclick="toggleFavorite(event, 'health')">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>
+                
+                <div class="subject-icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                    🏥
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-1">Health & Wellness</h3>
+                <p class="text-xs text-gray-600 mb-2">Medical visits, fitness, emotions</p>
+                <div class="flex items-center justify-between">
+                    <div class="difficulty-indicator">
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">26 conv.</span>
+                </div>
+            </div>
+
+            <!-- Education -->
+            <div class="subject-card p-4 relative" data-subject="education" data-levels="B1,B2,C1" onclick="selectSubject('education')">
+                <button class="favorite-btn" onclick="toggleFavorite(event, 'education')">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>
+                
+                <div class="subject-icon" style="background: linear-gradient(135deg, #fa709a, #fee140);">
+                    📚
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-1">Education</h3>
+                <p class="text-xs text-gray-600 mb-2">Academic discussions, learning</p>
+                <div class="flex items-center justify-between">
+                    <div class="difficulty-indicator">
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">30 conv.</span>
+                </div>
+            </div>
+
+            <!-- Technology -->
+            <div class="subject-card p-4 relative" data-subject="technology" data-levels="B1,B2,C1,C2" onclick="selectSubject('technology')">
+                <button class="favorite-btn" onclick="toggleFavorite(event, 'technology')">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>
+                
+                <div class="subject-icon" style="background: linear-gradient(135deg, #a8edea, #fed6e3);">
+                    📱
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-1">Technology</h3>
+                <p class="text-xs text-gray-600 mb-2">Digital communication, innovation</p>
+                <div class="flex items-center justify-between">
+                    <div class="difficulty-indicator">
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">40 conv.</span>
+                </div>
+            </div>
+
+            <!-- Social Life -->
+            <div class="subject-card p-4 relative" data-subject="social" data-levels="A1,A2,B1" onclick="selectSubject('social')">
+                <button class="favorite-btn" onclick="toggleFavorite(event, 'social')">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>
+                
+                <div class="subject-icon" style="background: linear-gradient(135deg, #ffecd2, #fcb69f);">
+                    👥
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-1">Social Life</h3>
+                <p class="text-xs text-gray-600 mb-2">Friendships, relationships, celebrations</p>
+                <div class="flex items-center justify-between">
+                    <div class="difficulty-indicator">
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">38 conv.</span>
+                </div>
+            </div>
+
+            <!-- Food & Cuisine -->
+            <div class="subject-card p-4 relative" data-subject="food" data-levels="A1,A2,B1" onclick="selectSubject('food')">
+                <button class="favorite-btn active" onclick="toggleFavorite(event, 'food')">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>
+                
+                <div class="subject-icon" style="background: linear-gradient(135deg, #ff9a9e, #fecfef);">
+                    🍽️
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-1">Food & Cuisine</h3>
+                <p class="text-xs text-gray-600 mb-2">Cooking, restaurants, regional specialties</p>
+                <div class="flex items-center justify-between">
+                    <div class="difficulty-indicator">
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">42 conv.</span>
+                </div>
+            </div>
+
+            <!-- History & Society -->
+            <div class="subject-card p-4 relative" data-subject="history" data-levels="B2,C1,C2" onclick="selectSubject('history')">
+                <button class="favorite-btn" onclick="toggleFavorite(event, 'history')">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>
+                
+                <div class="subject-icon" style="background: linear-gradient(135deg, #a1c4fd, #c2e9fb);">
+                    🏛️
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-1">History & Society</h3>
+                <p class="text-xs text-gray-600 mb-2">Current events, historical topics</p>
+                <div class="flex items-center justify-between">
+                    <div class="difficulty-indicator">
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">28 conv.</span>
+                </div>
+            </div>
+
+            <!-- Nature & Environment -->
+            <div class="subject-card p-4 relative" data-subject="nature" data-levels="B1,B2,C1" onclick="selectSubject('nature')">
+                <button class="favorite-btn" onclick="toggleFavorite(event, 'nature')">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>
+                
+                <div class="subject-icon" style="background: linear-gradient(135deg, #d4fc79, #96e6a1);">
+                    🌳
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-1">Nature & Environment</h3>
+                <p class="text-xs text-gray-600 mb-2">Climate, conservation, outdoor activities</p>
+                <div class="flex items-center justify-between">
+                    <div class="difficulty-indicator">
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">24 conv.</span>
+                </div>
+            </div>
+
+            <!-- Sports & Leisure -->
+            <div class="subject-card p-4 relative" data-subject="sports" data-levels="A2,B1,B2" onclick="selectSubject('sports')">
+                <button class="favorite-btn" onclick="toggleFavorite(event, 'sports')">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>
+                
+                <div class="subject-icon" style="background: linear-gradient(135deg, #ffecd2, #fcb69f);">
+                    ⚽
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-1">Sports & Leisure</h3>
+                <p class="text-xs text-gray-600 mb-2">Hobbies, games, entertainment</p>
+                <div class="flex items-center justify-between">
+                    <div class="difficulty-indicator">
+                        <div class="difficulty-dot"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot active"></div>
+                        <div class="difficulty-dot"></div>
+                    </div>
+                    <span class="text-xs text-gray-500">36 conv.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="nav-bottom fixed bottom-0 left-0 right-0 px-4 py-3">
+        <div class="flex items-center justify-around">
+            <a href="index.html" class="flex flex-col items-center space-y-1 text-gray-400">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span class="text-xs font-medium">Practice</span>
+            </a>
+            <a href="levels.html" class="flex flex-col items-center space-y-1 text-gray-400">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                </svg>
+                <span class="text-xs font-medium">Levels</span>
+            </a>
+            <a href="subjects.html" class="flex flex-col items-center space-y-1 text-orange-500">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+                </svg>
+                <span class="text-xs font-medium">Subjects</span>
+            </a>
+            <a href="progress.html" class="flex flex-col items-center space-y-1 text-gray-400">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+                </svg>
+                <span class="text-xs font-medium">Progress</span>
+            </a>
+        </div>
+    </nav>
+
+    <script>
+        let favorites = JSON.parse(localStorage.getItem('favorite_subjects') || '[]');
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSearch();
+            initializeFilters();
+            loadFavorites();
+            animateSubjectCards();
+        });
+
+        function initializeSearch() {
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
+                filterSubjects(query);
+            });
+        }
+
+        function initializeFilters() {
+            const filterButtons = document.querySelectorAll('.filter-chip');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active class to clicked button
+                    this.classList.add('active');
+                    
+                    const filter = this.dataset.filter;
+                    filterByLevel(filter);
+                });
+            });
+        }
+
+        function filterSubjects(query) {
+            const subjectCards = document.querySelectorAll('.subject-card');
+            subjectCards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                
+                if (title.includes(query) || description.includes(query)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function filterByLevel(filter) {
+            const subjectCards = document.querySelectorAll('.subject-card');
+            
+            subjectCards.forEach(card => {
+                const levels = card.dataset.levels.split(',');
+                let shouldShow = true;
+                
+                switch(filter) {
+                    case 'beginner':
+                        shouldShow = levels.some(level => ['A1', 'A2'].includes(level));
+                        break;
+                    case 'intermediate':
+                        shouldShow = levels.some(level => ['B1', 'B2'].includes(level));
+                        break;
+                    case 'advanced':
+                        shouldShow = levels.some(level => ['C1', 'C2'].includes(level));
+                        break;
+                    case 'favorites':
+                        shouldShow = favorites.includes(card.dataset.subject);
+                        break;
+                    case 'all':
+                    default:
+                        shouldShow = true;
+                        break;
+                }
+                
+                card.style.display = shouldShow ? 'block' : 'none';
+            });
+        }
+
+        function toggleFavorite(event, subjectId) {
+            event.stopPropagation();
+            
+            const button = event.currentTarget;
+            const isCurrentlyFavorite = favorites.includes(subjectId);
+            
+            if (isCurrentlyFavorite) {
+                favorites = favorites.filter(id => id !== subjectId);
+                button.classList.remove('active');
+            } else {
+                favorites.push(subjectId);
+                button.classList.add('active');
+            }
+            
+            localStorage.setItem('favorite_subjects', JSON.stringify(favorites));
+            
+            // Animate the button
+            anime({
+                targets: button,
+                scale: [1, 1.3, 1],
+                duration: 300,
+                easing: 'easeInOutQuad'
+            });
+        }
+
+        function loadFavorites() {
+            favorites.forEach(subjectId => {
+                const card = document.querySelector(`[data-subject="${subjectId}"]`);
+                if (card) {
+                    const button = card.querySelector('.favorite-btn');
+                    button.classList.add('active');
+                }
+            });
+        }
+
+        function selectSubject(subjectId) {
+            localStorage.setItem('selected_subject', subjectId);
+            
+            // Animate card selection
+            const card = document.querySelector(`[data-subject="${subjectId}"]`);
+            anime({
+                targets: card,
+                scale: [1, 0.95, 1],
+                duration: 200,
+                easing: 'easeInOutQuad',
+                complete: () => {
+                    // Navigate to practice page
+                    window.location.href = 'index.html';
+                }
+            });
+        }
+
+        function startDailyPractice() {
+            localStorage.setItem('selected_subject', 'food');
+            
+            anime({
+                targets: '.daily-prompt-card',
+                scale: [1, 0.95, 1],
+                duration: 200,
+                easing: 'easeInOutQuad',
+                complete: () => {
+                    window.location.href = 'index.html';
+                }
+            });
+        }
+
+        function animateSubjectCards() {
+            anime({
+                targets: '.subject-card',
+                translateY: [30, 0],
+                opacity: [0, 1],
+                delay: anime.stagger(50),
+                duration: 600,
+                easing: 'easeOutQuad'
+            });
+        }
+    </script>
+</body>
+</html>

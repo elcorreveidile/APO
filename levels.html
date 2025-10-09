@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Levels - SpanishFlow</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Dancing+Script:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --terracotta: #E07A5F;
+            --sage-green: #81B29A;
+            --golden-amber: #F2CC8F;
+            --warm-cream: #F4F3EE;
+            --charcoal: #3D405B;
+        }
+        
+        body {
+            background-color: var(--warm-cream);
+            font-family: 'Inter', sans-serif;
+            color: var(--charcoal);
+        }
+        
+        .level-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .level-card:active {
+            transform: scale(0.98);
+        }
+        
+        .level-card.completed {
+            background: linear-gradient(135deg, var(--sage-green), #6B9B83);
+            color: white;
+        }
+        
+        .level-card.current {
+            background: linear-gradient(135deg, var(--terracotta), #D96846);
+            color: white;
+            animation: glow 2s infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 4px 20px rgba(224, 122, 95, 0.3); }
+            to { box-shadow: 0 8px 40px rgba(224, 122, 95, 0.6); }
+        }
+        
+        .level-card.locked {
+            background: #F3F4F6;
+            color: #9CA3AF;
+        }
+        
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, var(--golden-amber), #FFD700);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+        
+        .nav-bottom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(224, 122, 95, 0.2);
+        }
+        
+        .achievement-badge {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--golden-amber), #FFD700);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(242, 204, 143, 0.4);
+        }
+        
+        .skill-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--sage-green);
+            transition: all 0.3s ease;
+        }
+        
+        .skill-indicator.inactive {
+            background: #E5E7EB;
+        }
+    </style>
+</head>
+<body class="pb-20">
+    <!-- Header -->
+    <div class="bg-white shadow-sm">
+        <div class="px-4 py-6">
+            <h1 class="text-2xl font-bold text-gray-800" style="font-family: 'Playfair Display', serif;">Your Progress</h1>
+            <p class="text-sm text-gray-600 mt-1">Track your Spanish learning journey</p>
+        </div>
+    </div>
+
+    <!-- Progress Overview -->
+    <div class="px-4 py-6">
+        <div class="bg-white rounded-2xl p-6 shadow-lg mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-800">Overall Progress</h2>
+                    <p class="text-sm text-gray-600">B1 Intermediate Level</p>
+                </div>
+                <div class="achievement-badge">
+                    <span class="text-2xl">🏆</span>
+                </div>
+            </div>
+            
+            <!-- Progress Stats -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-orange-500" id="total-recordings">47</div>
+                    <div class="text-xs text-gray-500">Recordings</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-500" id="current-streak">12</div>
+                    <div class="text-xs text-gray-500">Day Streak</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-500" id="total-hours">23</div>
+                    <div class="text-xs text-gray-500">Hours Practiced</div>
+                </div>
+            </div>
+            
+            <!-- Weekly Progress Chart -->
+            <div class="mb-4">
+                <h3 class="text-sm font-medium text-gray-700 mb-2">This Week's Activity</h3>
+                <div id="weekly-chart" style="height: 120px;"></div>
+            </div>
+        </div>
+
+        <!-- CEFR Levels Grid -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4" style="font-family: 'Playfair Display', serif;">CEFR Levels</h2>
+            
+            <div class="space-y-4">
+                <!-- A1 Level -->
+                <div class="level-card completed p-6" onclick="navigateToLevel('A1')">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                                <span class="text-2xl font-bold">A1</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold">Beginner</h3>
+                                <p class="text-sm opacity-80">Basic phrases & greetings</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl mb-1">✅</div>
+                            <div class="text-xs opacity-80">Completed</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar h-2 mb-3">
+                        <div class="progress-fill" style="width: 100%;"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-sm">
+                        <span>15/15 recordings</span>
+                        <span>≈ 100 hours</span>
+                    </div>
+                    
+                    <!-- Skills -->
+                    <div class="flex items-center space-x-2 mt-3">
+                        <span class="text-xs">Skills:</span>
+                        <div class="flex space-x-1">
+                            <div class="skill-indicator"></div>
+                            <div class="skill-indicator"></div>
+                            <div class="skill-indicator"></div>
+                            <div class="skill-indicator"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- A2 Level -->
+                <div class="level-card completed p-6" onclick="navigateToLevel('A2')">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                                <span class="text-2xl font-bold">A2</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold">Elementary</h3>
+                                <p class="text-sm opacity-80">Simple conversations</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl mb-1">✅</div>
+                            <div class="text-xs opacity-80">Completed</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar h-2 mb-3">
+                        <div class="progress-fill" style="width: 100%;"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-sm">
+                        <span>20/20 recordings</span>
+                        <span>≈ 200 hours</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2 mt-3">
+                        <span class="text-xs">Skills:</span>
+                        <div class="flex space-x-1">
+                            <div class="skill-indicator"></div>
+                            <div class="skill-indicator"></div>
+                            <div class="skill-indicator"></div>
+                            <div class="skill-indicator"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- B1 Level -->
+                <div class="level-card current p-6" onclick="navigateToLevel('B1')">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
+                                <span class="text-2xl font-bold">B1</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold">Intermediate</h3>
+                                <p class="text-sm opacity-80">Independent user</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl mb-1">🎯</div>
+                            <div class="text-xs opacity-80">Current</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar h-2 mb-3">
+                        <div class="progress-fill" style="width: 60%;"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-sm">
+                        <span>12/20 recordings</span>
+                        <span>≈ 400 hours</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2 mt-3">
+                        <span class="text-xs">Skills:</span>
+                        <div class="flex space-x-1">
+                            <div class="skill-indicator"></div>
+                            <div class="skill-indicator"></div>
+                            <div class="skill-indicator"></div>
+                            <div class="skill-indicator inactive"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- B2 Level -->
+                <div class="level-card locked p-6" onclick="showLevelLocked('B2')">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
+                                <span class="text-2xl font-bold text-gray-500">B2</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-600">Upper Intermediate</h3>
+                                <p class="text-sm text-gray-500">Complex discussions</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl mb-1">🔒</div>
+                            <div class="text-xs text-gray-500">Locked</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-200 h-2 rounded-full mb-3">
+                        <div class="bg-gray-400 h-2 rounded-full" style="width: 0%;"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <span>Complete B1 to unlock</span>
+                        <span>≈ 600 hours</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2 mt-3">
+                        <span class="text-xs text-gray-500">Skills:</span>
+                        <div class="flex space-x-1">
+                            <div class="skill-indicator inactive"></div>
+                            <div class="skill-indicator inactive"></div>
+                            <div class="skill-indicator inactive"></div>
+                            <div class="skill-indicator inactive"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- C1 Level -->
+                <div class="level-card locked p-6" onclick="showLevelLocked('C1')">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
+                                <span class="text-2xl font-bold text-gray-500">C1</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-600">Advanced</h3>
+                                <p class="text-sm text-gray-500">Professional proficiency</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl mb-1">🔒</div>
+                            <div class="text-xs text-gray-500">Locked</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-200 h-2 rounded-full mb-3">
+                        <div class="bg-gray-400 h-2 rounded-full" style="width: 0%;"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <span>Complete B2 to unlock</span>
+                        <span>≈ 800 hours</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2 mt-3">
+                        <span class="text-xs text-gray-500">Skills:</span>
+                        <div class="flex space-x-1">
+                            <div class="skill-indicator inactive"></div>
+                            <div class="skill-indicator inactive"></div>
+                            <div class="skill-indicator inactive"></div>
+                            <div class="skill-indicator inactive"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- C2 Level -->
+                <div class="level-card locked p-6" onclick="showLevelLocked('C2')">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
+                                <span class="text-2xl font-bold text-gray-500">C2</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-600">Mastery</h3>
+                                <p class="text-sm text-gray-500">Native-like fluency</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl mb-1">🔒</div>
+                            <div class="text-xs text-gray-500">Locked</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-200 h-2 rounded-full mb-3">
+                        <div class="bg-gray-400 h-2 rounded-full" style="width: 0%;"></div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <span>Complete C1 to unlock</span>
+                        <span>≈ 1000 hours</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2 mt-3">
+                        <span class="text-xs text-gray-500">Skills:</span>
+                        <div class="flex space-x-1">
+                            <div class="skill-indicator inactive"></div>
+                            <div class="skill-indicator inactive"></div>
+                            <div class="skill-indicator inactive"></div>
+                            <div class="skill-indicator inactive"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level Details Modal (Hidden by default) -->
+        <div id="level-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" style="display: none;">
+            <div class="bg-white rounded-2xl p-6 max-w-sm w-full">
+                <div class="text-center mb-4">
+                    <div class="w-16 h-16 rounded-full bg-gradient-to-r from-orange-400 to-red-400 flex items-center justify-center mx-auto mb-3">
+                        <span class="text-2xl font-bold text-white" id="modal-level">B1</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800" id="modal-title">Intermediate Level</h3>
+                    <p class="text-sm text-gray-600" id="modal-description">Independent Spanish user</p>
+                </div>
+                
+                <div class="space-y-3 mb-6">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Recordings completed:</span>
+                        <span class="text-sm font-medium" id="modal-recordings">12/20</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Estimated time:</span>
+                        <span class="text-sm font-medium" id="modal-time">400 hours</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Skills unlocked:</span>
+                        <span class="text-sm font-medium" id="modal-skills">3/4</span>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button class="flex-1 py-3 bg-orange-500 text-white rounded-xl font-medium" onclick="startLevelPractice()">
+                        Start Practice
+                    </button>
+                    <button class="flex-1 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium" onclick="closeLevelModal()">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="nav-bottom fixed bottom-0 left-0 right-0 px-4 py-3">
+        <div class="flex items-center justify-around">
+            <a href="index.html" class="flex flex-col items-center space-y-1 text-gray-400">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span class="text-xs font-medium">Practice</span>
+            </a>
+            <a href="levels.html" class="flex flex-col items-center space-y-1 text-orange-500">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                </svg>
+                <span class="text-xs font-medium">Levels</span>
+            </a>
+            <a href="subjects.html" class="flex flex-col items-center space-y-1 text-gray-400">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2zm4-8H9V5h10v2z"/>
+                </svg>
+                <span class="text-xs font-medium">Subjects</span>
+            </a>
+            <a href="progress.html" class="flex flex-col items-center space-y-1 text-gray-400">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/>
+                </svg>
+                <span class="text-xs font-medium">Progress</span>
+            </a>
+        </div>
+    </nav>
+
+    <script>
+        // Initialize the levels page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeWeeklyChart();
+            loadUserProgress();
+            animateLevelCards();
+        });
+
+        function initializeWeeklyChart() {
+            const chartDom = document.getElementById('weekly-chart');
+            const myChart = echarts.init(chartDom);
+            
+            const option = {
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    top: '10%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    axisLine: { show: false },
+                    axisTick: { show: false },
+                    axisLabel: { 
+                        fontSize: 10,
+                        color: '#6B7280'
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    show: false
+                },
+                series: [{
+                    data: [3, 5, 2, 4, 6, 3, 4],
+                    type: 'bar',
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#E07A5F' },
+                            { offset: 1, color: '#81B29A' }
+                        ]),
+                        borderRadius: [4, 4, 0, 0]
+                    },
+                    barWidth: '60%'
+                }]
+            };
+            
+            myChart.setOption(option);
+        }
+
+        function loadUserProgress() {
+            // Load progress from localStorage
+            const progress = JSON.parse(localStorage.getItem('spanishflow_progress') || '{}');
+            
+            // Update stats based on progress
+            let totalRecordings = 0;
+            let currentStreak = 0;
+            
+            Object.values(progress).forEach(level => {
+                totalRecordings += level.recordings || 0;
+                currentStreak = Math.max(currentStreak, level.streak || 0);
+            });
+            
+            document.getElementById('total-recordings').textContent = totalRecordings;
+            document.getElementById('current-streak').textContent = currentStreak;
+            document.getElementById('total-hours').textContent = Math.floor(totalRecordings * 0.5); // Rough estimate
+        }
+
+        function animateLevelCards() {
+            anime({
+                targets: '.level-card',
+                translateY: [50, 0],
+                opacity: [0, 1],
+                delay: anime.stagger(100),
+                duration: 800,
+                easing: 'easeOutQuad'
+            });
+        }
+
+        function navigateToLevel(level) {
+            // Show level details modal
+            showLevelModal(level);
+        }
+
+        function showLevelModal(level) {
+            const modal = document.getElementById('level-modal');
+            const levelData = getLevelData(level);
+            
+            document.getElementById('modal-level').textContent = level;
+            document.getElementById('modal-title').textContent = levelData.title;
+            document.getElementById('modal-description').textContent = levelData.description;
+            document.getElementById('modal-recordings').textContent = levelData.recordings;
+            document.getElementById('modal-time').textContent = levelData.time;
+            document.getElementById('modal-skills').textContent = levelData.skills;
+            
+            modal.style.display = 'flex';
+            
+            // Animate modal appearance
+            anime({
+                targets: modal.querySelector('.bg-white'),
+                scale: [0.8, 1],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutQuad'
+            });
+        }
+
+        function closeLevelModal() {
+            const modal = document.getElementById('level-modal');
+            
+            anime({
+                targets: modal.querySelector('.bg-white'),
+                scale: [1, 0.8],
+                opacity: [1, 0],
+                duration: 200,
+                easing: 'easeInQuad',
+                complete: () => {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        function showLevelLocked(level) {
+            alert(`${level} level is locked. Complete the previous level to unlock it!`);
+        }
+
+        function startLevelPractice() {
+            const level = document.getElementById('modal-level').textContent;
+            localStorage.setItem('selected_level', level);
+            window.location.href = 'index.html';
+        }
+
+        function getLevelData(level) {
+            const levelData = {
+                'A1': {
+                    title: 'Beginner Level',
+                    description: 'Basic Spanish phrases and greetings',
+                    recordings: '15/15',
+                    time: '≈ 100 hours',
+                    skills: '4/4'
+                },
+                'A2': {
+                    title: 'Elementary Level',
+                    description: 'Simple conversations and daily topics',
+                    recordings: '20/20',
+                    time: '≈ 200 hours',
+                    skills: '4/4'
+                },
+                'B1': {
+                    title: 'Intermediate Level',
+                    description: 'Independent Spanish user',
+                    recordings: '12/20',
+                    time: '≈ 400 hours',
+                    skills: '3/4'
+                },
+                'B2': {
+                    title: 'Upper Intermediate',
+                    description: 'Complex discussions and debates',
+                    recordings: '0/25',
+                    time: '≈ 600 hours',
+                    skills: '0/4'
+                },
+                'C1': {
+                    title: 'Advanced Level',
+                    description: 'Professional Spanish proficiency',
+                    recordings: '0/30',
+                    time: '≈ 800 hours',
+                    skills: '0/4'
+                },
+                'C2': {
+                    title: 'Mastery Level',
+                    description: 'Native-like fluency',
+                    recordings: '0/35',
+                    time: '≈ 1000 hours',
+                    skills: '0/4'
+                }
+            };
+            
+            return levelData[level] || levelData['B1'];
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('level-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLevelModal();
+            }
+        });
+    </script>
+</body>
+</html>

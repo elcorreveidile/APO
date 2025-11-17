@@ -10,7 +10,9 @@
     "lint": "eslint src/**/*.js",
     "db:test": "node scripts/test-db.js",
     "db:seed": "node scripts/seed.js",
-    "db:reset": "node scripts/seed.js --force"
+    "db:reset": "node scripts/seed.js --force",
+    "diagnose": "node scripts/diagnose.js",
+    "setup": "npm install && node scripts/diagnose.js"
   },
   "keywords": [
     "checkin",

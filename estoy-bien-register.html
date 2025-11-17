@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrarse - Estoy Bien</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            min-height: 100vh;
+        }
+
+        h1, h2 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex items-center justify-center px-4 py-12">
+        <div class="card p-8 w-full max-w-md">
+            <!-- Logo/Icon -->
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-white text-4xl">✓</span>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Estoy Bien</h1>
+                <p class="text-gray-600">Crea tu cuenta</p>
+            </div>
+
+            <!-- Register Form -->
+            <form id="register-form" onsubmit="handleRegister(event)">
+                <div class="mb-4">
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre completo
+                    </label>
+                    <input
+                        type="text"
+                        id="name"
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Juan Pérez"
+                    >
+                </div>
+
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                        Email
+                    </label>
+                    <input
+                        type="email"
+                        id="email"
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="tu@email.com"
+                    >
+                </div>
+
+                <div class="mb-4">
+                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+                        Teléfono
+                    </label>
+                    <input
+                        type="tel"
+                        id="phone"
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="+34 600 123 456"
+                    >
+                </div>
+
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                        Contraseña
+                    </label>
+                    <input
+                        type="password"
+                        id="password"
+                        required
+                        minlength="6"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        placeholder="Mínimo 6 caracteres"
+                    >
+                    <p class="text-xs text-gray-500 mt-1">Mínimo 6 caracteres</p>
+                </div>
+
+                <!-- Error message -->
+                <div id="error-message" class="hidden mb-4 p-3 bg-red-100 border border-red-300 rounded-lg text-red-700 text-sm">
+                </div>
+
+                <button
+                    type="submit"
+                    id="register-btn"
+                    class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 rounded-lg transition shadow-lg"
+                >
+                    Crear Cuenta
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <p class="text-gray-600">
+                    ¿Ya tienes una cuenta?
+                    <a href="estoy-bien-login.html" class="text-green-600 hover:text-green-700 font-medium">
+                        Inicia sesión aquí
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="estoy-bien-api.js"></script>
+    <script>
+        // Check if already logged in
+        if (api.isAuthenticated()) {
+            window.location.href = 'estoy-bien.html';
+        }
+
+        async function handleRegister(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            const registerBtn = document.getElementById('register-btn');
+            const errorMessage = document.getElementById('error-message');
+
+            // Clear previous errors
+            errorMessage.classList.add('hidden');
+
+            // Disable button
+            registerBtn.disabled = true;
+            registerBtn.textContent = 'Creando cuenta...';
+
+            try {
+                const response = await api.register({
+                    name,
+                    email,
+                    phone,
+                    password
+                });
+
+                if (response.success) {
+                    // Show success message
+                    showNotification('¡Cuenta creada exitosamente!', 'success');
+
+                    // Redirect to main page
+                    setTimeout(() => {
+                        window.location.href = 'estoy-bien.html';
+                    }, 1000);
+                }
+            } catch (error) {
+                // Show error
+                errorMessage.textContent = error.message || 'Error al crear la cuenta. Intenta de nuevo.';
+                errorMessage.classList.remove('hidden');
+
+                // Re-enable button
+                registerBtn.disabled = false;
+                registerBtn.textContent = 'Crear Cuenta';
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 ${
+                type === 'success' ? 'bg-green-500' : 'bg-blue-500'
+            } text-white font-medium`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
